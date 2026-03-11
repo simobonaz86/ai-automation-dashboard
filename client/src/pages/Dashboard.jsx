@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../api';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -379,7 +379,7 @@ export default function Dashboard() {
                       <tr>
                         <th></th>
                         {YEARS.map(y => (
-                          <><th key={`${y}m`} className="px-2 py-1 text-center text-[10px] text-blue-600">Min</th><th key={`${y}x`} className="px-2 py-1 text-center text-[10px] text-red-600">Max</th></>
+                          <React.Fragment key={`${y}-sub`}><th className="px-2 py-1 text-center text-[10px] text-blue-600">Min</th><th className="px-2 py-1 text-center text-[10px] text-red-600">Max</th></React.Fragment>
                         ))}
                       </tr>
                     </thead>
@@ -388,10 +388,10 @@ export default function Dashboard() {
                         <tr key={r.id} className="hover:bg-gray-50">
                           <td className="px-4 py-2.5 font-medium text-gray-900">{r.name} <span className="text-xs text-gray-400">({r.code})</span></td>
                           {YEARS.map(y => (
-                            <>
-                              <td key={`${r.id}${y}m`} className="px-2 py-2.5 text-center text-blue-700">{(r.yearly[y]?.min || 0).toFixed(1)}</td>
-                              <td key={`${r.id}${y}x`} className="px-2 py-2.5 text-center text-red-700">{(r.yearly[y]?.max || 0).toFixed(1)}</td>
-                            </>
+                            <React.Fragment key={`${r.id}-${y}`}>
+                              <td className="px-2 py-2.5 text-center text-blue-700">{(r.yearly[y]?.min || 0).toFixed(1)}</td>
+                              <td className="px-2 py-2.5 text-center text-red-700">{(r.yearly[y]?.max || 0).toFixed(1)}</td>
+                            </React.Fragment>
                           ))}
                         </tr>
                       ))}
@@ -474,7 +474,7 @@ export default function Dashboard() {
                     <tr>
                       <th></th><th></th>
                       {YEARS.map(y => (
-                        <><th key={`${y}m`} className="px-1 py-1 text-center text-[10px] text-blue-600">Min</th><th key={`${y}x`} className="px-1 py-1 text-center text-[10px] text-red-600">Max</th></>
+                        <React.Fragment key={`${y}-agent-sub`}><th className="px-1 py-1 text-center text-[10px] text-blue-600">Min</th><th className="px-1 py-1 text-center text-[10px] text-red-600">Max</th></React.Fragment>
                       ))}
                     </tr>
                   </thead>
@@ -489,10 +489,10 @@ export default function Dashboard() {
                         </td>
                         <td className="px-3 py-2.5 text-right text-gray-600">{a.entitlement.toFixed(1)}</td>
                         {YEARS.map(y => (
-                          <>
-                            <td key={`${a.id}${y}m`} className="px-1 py-2.5 text-center text-blue-700 text-xs">{(a.yearly[y]?.min || 0).toFixed(1)}</td>
-                            <td key={`${a.id}${y}x`} className="px-1 py-2.5 text-center text-red-700 text-xs">{(a.yearly[y]?.max || 0).toFixed(1)}</td>
-                          </>
+                          <React.Fragment key={`${a.id}-${y}`}>
+                            <td className="px-1 py-2.5 text-center text-blue-700 text-xs">{(a.yearly[y]?.min || 0).toFixed(1)}</td>
+                            <td className="px-1 py-2.5 text-center text-red-700 text-xs">{(a.yearly[y]?.max || 0).toFixed(1)}</td>
+                          </React.Fragment>
                         ))}
                       </tr>
                     ))}

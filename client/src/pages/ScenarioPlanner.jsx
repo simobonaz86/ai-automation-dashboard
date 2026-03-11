@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../api';
 import Modal from '../components/Modal';
 import { Plus, Pencil, Trash2, Star, BarChart3, GitCompare } from 'lucide-react';
@@ -164,10 +164,10 @@ export default function ScenarioPlanner() {
                 <tr>
                   <th></th>
                   {compareResults.map(r => (
-                    <>
-                      <th key={`${r.scenario.id}-min`} className="px-3 py-2 text-center text-[10px] font-medium text-blue-600">Min</th>
-                      <th key={`${r.scenario.id}-max`} className="px-3 py-2 text-center text-[10px] font-medium text-red-600">Max</th>
-                    </>
+                    <React.Fragment key={`${r.scenario.id}-sub`}>
+                      <th className="px-3 py-2 text-center text-[10px] font-medium text-blue-600">Min</th>
+                      <th className="px-3 py-2 text-center text-[10px] font-medium text-red-600">Max</th>
+                    </React.Fragment>
                   ))}
                 </tr>
               </thead>
@@ -176,28 +176,28 @@ export default function ScenarioPlanner() {
                   <tr key={year} className="hover:bg-gray-50">
                     <td className="px-4 py-2.5 font-medium text-gray-900">{year}</td>
                     {compareResults.map(r => (
-                      <>
-                        <td key={`${r.scenario.id}-${year}-min`} className="px-3 py-2.5 text-center text-blue-700 font-medium">
+                      <React.Fragment key={`${r.scenario.id}-${year}`}>
+                        <td className="px-3 py-2.5 text-center text-blue-700 font-medium">
                           {r.yearlyTotals?.[year]?.min?.toFixed(1) || '—'}
                         </td>
-                        <td key={`${r.scenario.id}-${year}-max`} className="px-3 py-2.5 text-center text-red-700 font-medium">
+                        <td className="px-3 py-2.5 text-center text-red-700 font-medium">
                           {r.yearlyTotals?.[year]?.max?.toFixed(1) || '—'}
                         </td>
-                      </>
+                      </React.Fragment>
                     ))}
                   </tr>
                 ))}
                 <tr className="bg-gray-50 font-semibold">
                   <td className="px-4 py-2.5 text-gray-900">Average</td>
                   {compareResults.map(r => (
-                    <>
-                      <td key={`${r.scenario.id}-avg-min`} className="px-3 py-2.5 text-center text-blue-700">
+                    <React.Fragment key={`${r.scenario.id}-avg`}>
+                      <td className="px-3 py-2.5 text-center text-blue-700">
                         {r.totals?.min?.toFixed(1) || '—'}
                       </td>
-                      <td key={`${r.scenario.id}-avg-max`} className="px-3 py-2.5 text-center text-red-700">
+                      <td className="px-3 py-2.5 text-center text-red-700">
                         {r.totals?.max?.toFixed(1) || '—'}
                       </td>
-                    </>
+                    </React.Fragment>
                   ))}
                 </tr>
               </tbody>

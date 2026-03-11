@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
 import { initializeDatabase } from './db.js';
 import regionsRouter from './routes/regions.js';
 import teamsRouter from './routes/teams.js';
@@ -28,19 +29,34 @@ app.use('/api/agents', agentsRouter);
 app.use('/api/baselines', baselinesRouter);
 app.use('/api/scenarios', scenariosRouter);
 
-const clientDist = join(__dirname, '..', '..', 'client', 'dist');
-app.use(express.static(clientDist));
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(join(clientDist, 'index.html'));
-  }
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: `API route not found: ${req.method} ${req.path}` });
 });
 
+const clientDist = join(__dirname, '..', '..', 'client', 'dist');
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(join(clientDist, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'AI Productivity Planner API is running',
+      hint: 'Run "cd client && npm run build" to serve the frontend, or use "npm run dev" for development mode.',
+      api: '/api',
+    });
+  });
+}
+
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error('Unhandled error:', err.stack || err.message || err);
+  res.status(500).json({ error: 'Internal server error', detail: err.message });
 });
 
 app.listen(PORT, () => {
   console.log(`AI Productivity Planner API running on http://localhost:${PORT}`);
+  if (!fs.existsSync(clientDist)) {
+    console.log('  Frontend not built — run "cd client && npm run build" or use "npm run dev" for development.');
+  }
 });
