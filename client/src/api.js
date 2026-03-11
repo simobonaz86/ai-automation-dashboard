@@ -21,7 +21,9 @@ export const api = {
   },
   teams: {
     list: () => request('/teams'),
+    create: (data) => request('/teams', { method: 'POST', body: JSON.stringify(data) }),
     update: (id, data) => request(`/teams/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => request(`/teams/${id}`, { method: 'DELETE' }),
     updateTransfers: (id, transfers) => request(`/teams/${id}/transfers`, { method: 'PUT', body: JSON.stringify({ transfers }) }),
   },
   steps: {

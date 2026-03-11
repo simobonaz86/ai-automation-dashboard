@@ -43,6 +43,21 @@ router.put('/:id', (req, res) => {
   }
 });
 
+router.delete('/:id', (req, res) => {
+  try {
+    const stepCount = db.prepare('SELECT COUNT(*) as cnt FROM process_steps WHERE team_id = ?').get(req.params.id);
+    if (stepCount.cnt > 0) {
+      return res.status(400).json({ error: `Cannot delete team: ${stepCount.cnt} process steps are assigned to it. Remove or reassign them first.` });
+    }
+    db.prepare('DELETE FROM team_transfers WHERE source_team_id = ? OR target_team_id = ?').run(req.params.id, req.params.id);
+    db.prepare('DELETE FROM teams WHERE id = ?').run(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /teams/:id error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.put('/:id/transfers', (req, res) => {
   try {
     const { transfers } = req.body;
