@@ -4,14 +4,13 @@ Web application for modelling FTE productivity savings from AI agent deployment 
 
 ## Quick Start
 
+**Important:** Make sure you are in the project root directory (where `package.json` is) before running any commands.
+
 ```bash
-# Install all dependencies
-npm run install:all
+# 1. Install dependencies + seed database (one command)
+npm run setup
 
-# Seed the database with initial data
-cd server && npm run seed && cd ..
-
-# Run both server and client in development mode
+# 2. Run in development mode (hot-reload on both server and client)
 npm run dev
 ```
 
@@ -19,12 +18,23 @@ The app will be available at:
 - **Frontend (dev):** http://localhost:5173
 - **API server:** http://localhost:3001
 
-For production mode (single port):
+### Production mode (single port)
+
 ```bash
-cd client && npm run build && cd ..
+npm run build
 npm start
 ```
+
 Then open http://localhost:3001.
+
+### Step-by-step (if `npm run setup` fails)
+
+```bash
+npm install                        # root dependencies
+npm install --prefix server        # server dependencies
+npm install --prefix client        # client dependencies
+npm run seed                       # seed the SQLite database
+```
 
 ## Architecture
 
