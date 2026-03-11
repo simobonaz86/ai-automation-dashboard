@@ -2,6 +2,11 @@
 
 Web application for modelling FTE productivity savings from AI agent deployment across CX and Operations functions. Replaces the Excel model (Landside_AI_Productivity_v8.xlsx) while preserving all calculation logic, adding a fully dynamic process library, agent registry, and scenario engine.
 
+## Prerequisites
+
+- **Node.js 18+** (check with `node --version`; upgrade with `nvm install 20 && nvm use 20` if needed)
+- npm 8+
+
 ## Quick Start
 
 **Important:** Make sure you are in the project root directory (where `package.json` is) before running any commands.
