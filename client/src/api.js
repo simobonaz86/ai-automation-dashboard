@@ -55,6 +55,8 @@ export const api = {
     versions: () => request('/baselines/versions'),
     bulkUpdate: (updates, version) => request('/baselines/bulk', { method: 'PUT', body: JSON.stringify({ updates, version }) }),
     createVersion: (source, name) => request('/baselines/version', { method: 'POST', body: JSON.stringify({ source_version: source, new_version: name }) }),
+    getGrowth: (version) => request(`/baselines/growth?version=${encodeURIComponent(version)}`),
+    updateGrowth: (rates, version) => request('/baselines/growth', { method: 'PUT', body: JSON.stringify({ rates, version }) }),
   },
   scenarios: {
     list: () => request('/scenarios'),

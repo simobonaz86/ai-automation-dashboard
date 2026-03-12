@@ -123,6 +123,16 @@ export function initializeDatabase() {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS growth_rates (
+      id TEXT PRIMARY KEY,
+      region_id TEXT REFERENCES regions(id) ON DELETE CASCADE,
+      team_id TEXT REFERENCES teams(id) ON DELETE CASCADE,
+      year INTEGER NOT NULL,
+      growth_pct REAL NOT NULL DEFAULT 0,
+      version TEXT NOT NULL DEFAULT 'Budget 2026',
+      UNIQUE(region_id, team_id, year, version)
+    );
+
     CREATE TABLE IF NOT EXISTS scenario_overrides (
       id TEXT PRIMARY KEY,
       scenario_id TEXT NOT NULL REFERENCES scenarios(id) ON DELETE CASCADE,

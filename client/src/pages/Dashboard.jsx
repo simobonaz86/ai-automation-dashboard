@@ -425,33 +425,46 @@ export default function Dashboard() {
 
               <div className="card overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/80">
-                  <h3 className="text-sm font-semibold text-gray-900">Yearly Summary</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Click a row to filter the dashboard to that year</p>
+                  <h3 className="text-sm font-semibold text-gray-900">Yearly Summary — Gross, Net New & Cumulative Savings</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Click a row to filter the dashboard to that year. Baseline reflects AI feedback (FTEs saved reduce next year's pool).</p>
                 </div>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Year</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Baseline</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-blue-500 uppercase tracking-wider">Min Saved</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-red-500 uppercase tracking-wider">Max Saved</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-blue-500 uppercase tracking-wider">% Min</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-red-500 uppercase tracking-wider">% Max</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {yearlyChartData.map(row => (
-                      <tr key={row.year} className={`cursor-pointer transition-colors ${selectedYear === parseInt(row.year) ? 'bg-blue-50/60' : 'hover:bg-gray-50/60'}`} onClick={() => setSelectedYear(selectedYear === parseInt(row.year) ? null : parseInt(row.year))}>
-                        <td className="px-6 py-3 font-semibold text-gray-900">{row.year}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-gray-600">{fmtInt(row.baseline)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums font-medium text-blue-700">{fmt(row.min_saved)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums font-medium text-red-700">{fmt(row.max_saved)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-blue-600">{fmtPct(row.pct_min)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-red-600">{fmtPct(row.pct_max)}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="px-6 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Year</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Baseline</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-blue-500 uppercase tracking-wider">Gross Min</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-red-500 uppercase tracking-wider">Gross Max</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-blue-500 uppercase tracking-wider">% Min</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-red-500 uppercase tracking-wider">% Max</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-emerald-600 uppercase tracking-wider border-l border-gray-200">Net New Min</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">Net New Max</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-purple-600 uppercase tracking-wider border-l border-gray-200">Cumul Min</th>
+                        <th className="px-3 py-3 text-right text-[11px] font-semibold text-purple-600 uppercase tracking-wider">Cumul Max</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {yearlyChartData.map(row => {
+                        const yt = results.yearlyTotals[parseInt(row.year)] || {};
+                        return (
+                          <tr key={row.year} className={`cursor-pointer transition-colors ${selectedYear === parseInt(row.year) ? 'bg-blue-50/60' : 'hover:bg-gray-50/60'}`} onClick={() => setSelectedYear(selectedYear === parseInt(row.year) ? null : parseInt(row.year))}>
+                            <td className="px-6 py-3 font-semibold text-gray-900">{row.year}</td>
+                            <td className="px-3 py-3 text-right tabular-nums text-gray-600">{fmtInt(row.baseline)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-blue-700">{fmt(row.min_saved)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-red-700">{fmt(row.max_saved)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums text-blue-600">{fmtPct(row.pct_min)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums text-red-600">{fmtPct(row.pct_max)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-emerald-700 border-l border-gray-100">{fmt(yt.netNewMin || 0)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-emerald-700">{fmt(yt.netNewMax || 0)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-purple-700 border-l border-gray-100">{fmt(yt.cumulativeMin || 0)}</td>
+                            <td className="px-3 py-3 text-right tabular-nums font-medium text-purple-700">{fmt(yt.cumulativeMax || 0)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

@@ -177,7 +177,7 @@ addAgent(
   [{ year: 2026, q4_value: 5 }, { year: 2027, q4_value: 10 }, { year: 2028, q4_value: 20 }, { year: 2029, q4_value: 20 }]
 );
 
-// FTE Baselines — representative data from Key_Inputs
+// FTE Baselines — only 2026 base year (manual input)
 const insertBaseline = db.prepare(
   'INSERT INTO fte_baselines (id, region_id, team_id, year, month, fte_value, version) VALUES (?, ?, ?, ?, ?, ?, ?)'
 );
@@ -190,20 +190,23 @@ const baselineFTE = {
   IMEA:  { CX: 150, OPS: 170 },
 };
 
-const yearlyGrowth = { 2026: 1.0, 2027: 1.02, 2028: 1.04, 2029: 1.05 };
-
 for (const [regionCode, teams2] of Object.entries(baselineFTE)) {
   for (const [teamCode, baseFte] of Object.entries(teams2)) {
-    for (const year of [2026, 2027, 2028, 2029]) {
-      for (let month = 1; month <= 12; month++) {
-        const fte = Math.round(baseFte * yearlyGrowth[year] * 10) / 10;
-        insertBaseline.run(
-          uuidv4(), regionIds[regionCode], teamIds[teamCode],
-          year, month, fte, 'Budget 2026'
-        );
-      }
+    for (let month = 1; month <= 12; month++) {
+      insertBaseline.run(
+        uuidv4(), regionIds[regionCode], teamIds[teamCode],
+        2026, month, baseFte, 'Budget 2026'
+      );
     }
   }
+}
+
+// Growth rates — global defaults (2% / 4% / 5%)
+const insertGrowth = db.prepare(
+  'INSERT INTO growth_rates (id, region_id, team_id, year, growth_pct, version) VALUES (?, ?, ?, ?, ?, ?)'
+);
+for (const [year, pct] of [[2027, 2], [2028, 2], [2029, 1]]) {
+  insertGrowth.run(uuidv4(), null, null, year, pct, 'Budget 2026');
 }
 
 // Default Scenario
@@ -225,5 +228,6 @@ console.log(`  Regions: ${regions.length}`);
 console.log(`  Teams: ${teams.length}`);
 console.log(`  Process Steps: ${Object.keys(stepIds).length}`);
 console.log(`  AI Agents: ${Object.keys(agentIds).length}`);
-console.log(`  FTE Baseline records: ${Object.keys(baselineFTE).length * 2 * 4 * 12}`);
+console.log(`  FTE Baseline records (2026 only): ${Object.keys(baselineFTE).length * 2 * 12}`);
+console.log(`  Growth rates: 3 (global defaults)`);
 console.log(`  Scenarios: 1`);
