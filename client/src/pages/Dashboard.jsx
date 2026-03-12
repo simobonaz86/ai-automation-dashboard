@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import {
   TrendingDown, Users, Bot, ChevronDown, ChevronRight, Maximize2, Minimize2,
-  Calendar
+  Calendar, AlertTriangle, PlusCircle
 } from 'lucide-react';
 
 const YEARS = [2026, 2027, 2028, 2029];
@@ -137,6 +137,7 @@ export default function Dashboard() {
   const [selectedScenario, setSelectedScenario] = useState('');
   const [results, setResults] = useState(null);
   const [processTree, setProcessTree] = useState([]);
+  const [allAgents, setAllAgents] = useState([]);
   const [viewMode, setViewMode] = useState('min');
   const [selectedYear, setSelectedYear] = useState(null);
   const [presentationMode, setPresentationMode] = useState(false);
@@ -144,16 +145,20 @@ export default function Dashboard() {
   const [expandedSteps, setExpandedSteps] = useState(new Set());
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    api.scenarios.list().then(s => {
-      setScenarios(s);
-      const def = s.find(x => x.is_default) || s[0];
-      if (def) setSelectedScenario(def.id);
-    });
-    api.steps.tree().then(setProcessTree);
+  const loadScenarios = useCallback(async () => {
+    const [s, agents] = await Promise.all([api.scenarios.list(), api.agents.list({})]);
+    setScenarios(s);
+    setAllAgents(agents);
+    const def = s.find(x => x.is_default) || s[0];
+    if (def && !selectedScenario) setSelectedScenario(def.id);
   }, []);
 
   useEffect(() => {
+    loadScenarios();
+    api.steps.tree().then(setProcessTree);
+  }, []);
+
+  const runCalc = useCallback(() => {
     if (!selectedScenario) return;
     setLoading(true);
     api.scenarios.calculate(selectedScenario).then(r => {
@@ -161,6 +166,27 @@ export default function Dashboard() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [selectedScenario]);
+
+  useEffect(() => { runCalc(); }, [runCalc]);
+
+  const currentScenario = useMemo(() => scenarios.find(s => s.id === selectedScenario), [scenarios, selectedScenario]);
+
+  const missingAgents = useMemo(() => {
+    if (!currentScenario) return [];
+    return allAgents.filter(a =>
+      (a.status === 'Active' || a.status === 'Planned') &&
+      !currentScenario.agent_set.includes(a.id) &&
+      a.assignment_count > 0
+    );
+  }, [allAgents, currentScenario]);
+
+  const addMissingAgentsToScenario = async () => {
+    if (!currentScenario || missingAgents.length === 0) return;
+    const newSet = [...currentScenario.agent_set, ...missingAgents.map(a => a.id)];
+    await api.scenarios.update(currentScenario.id, { agent_set: newSet });
+    await loadScenarios();
+    runCalc();
+  };
 
   const effectiveTotals = useMemo(() => {
     if (!results) return { min: 0, max: 0, baseline: 0 };
@@ -314,6 +340,23 @@ export default function Dashboard() {
             </div>
             <YearSelector selectedYear={selectedYear} onChange={setSelectedYear} />
           </div>
+
+          {missingAgents.length > 0 && !presentationMode && (
+            <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+              <AlertTriangle size={18} className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800">
+                  {missingAgents.length} active/planned agent{missingAgents.length > 1 ? 's' : ''} not in this scenario
+                </p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  {missingAgents.map(a => a.name).join(', ')}
+                </p>
+              </div>
+              <button className="btn-sm bg-amber-600 text-white hover:bg-amber-700 rounded-lg flex-shrink-0" onClick={addMissingAgentsToScenario}>
+                <PlusCircle size={14} /> Add All
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-4 gap-4 mb-6">
             <MetricCard label="FTE Baseline" value={fmtInt(effectiveTotals.baseline)} subtitle={periodLabel} icon={Users} color="blue" />
