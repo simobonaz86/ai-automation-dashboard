@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Settings, Bot, BarChart3, Target, LayoutDashboard, Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Settings, Bot, BarChart3, Target, LayoutDashboard, Menu, X, LogOut, User } from 'lucide-react';
+import { setAuthErrorHandler } from './api';
+import Login from './pages/Login';
 import ProcessLibrary from './pages/ProcessLibrary';
 import AgentRegistry from './pages/AgentRegistry';
 import AgentDetail from './pages/AgentDetail';
@@ -18,6 +20,37 @@ const navItems = [
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (stored && token) {
+      setUser(JSON.parse(stored));
+    }
+    setAuthChecked(true);
+
+    setAuthErrorHandler(() => {
+      setUser(null);
+    });
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  if (!authChecked) return null;
+
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <BrowserRouter>
@@ -53,8 +86,19 @@ function App() {
             ))}
           </nav>
           {sidebarOpen && (
-            <div className="p-4 border-t border-gray-200">
-              <p className="text-[10px] text-gray-400 text-center">v1.0 — March 2026</p>
+            <div className="p-3 border-t border-gray-200">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <User size={14} className="text-blue-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-gray-900 truncate">{user.name}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{user.role}</p>
+                </div>
+                <button onClick={handleLogout} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title="Sign out">
+                  <LogOut size={14} />
+                </button>
+              </div>
             </div>
           )}
         </aside>

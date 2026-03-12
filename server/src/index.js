@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import { initializeDatabase } from './db.js';
+import authRouter from './routes/auth.js';
+import { requireAuth } from './middleware/auth.js';
 import regionsRouter from './routes/regions.js';
 import teamsRouter from './routes/teams.js';
 import processStepsRouter from './routes/processSteps.js';
@@ -22,12 +24,14 @@ app.use(express.json({ limit: '10mb' }));
 
 initializeDatabase();
 
-app.use('/api/regions', regionsRouter);
-app.use('/api/teams', teamsRouter);
-app.use('/api/process-steps', processStepsRouter);
-app.use('/api/agents', agentsRouter);
-app.use('/api/baselines', baselinesRouter);
-app.use('/api/scenarios', scenariosRouter);
+app.use('/api/auth', authRouter);
+
+app.use('/api/regions', requireAuth, regionsRouter);
+app.use('/api/teams', requireAuth, teamsRouter);
+app.use('/api/process-steps', requireAuth, processStepsRouter);
+app.use('/api/agents', requireAuth, agentsRouter);
+app.use('/api/baselines', requireAuth, baselinesRouter);
+app.use('/api/scenarios', requireAuth, scenariosRouter);
 
 app.all('/api/*', (req, res) => {
   res.status(404).json({ error: `API route not found: ${req.method} ${req.path}` });

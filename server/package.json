@@ -12,9 +12,11 @@
     "seed": "node src/seed.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^11.7.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.3",
     "uuid": "^11.1.0"
   }
 }

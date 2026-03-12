@@ -1,10 +1,22 @@
 const BASE = '/api';
 
+let onAuthError = null;
+export function setAuthErrorHandler(fn) { onAuthError = fn; }
+
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  });
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}${path}`, { headers, ...options });
+
+  if (res.status === 401 && !path.startsWith('/auth')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    if (onAuthError) onAuthError();
+    throw new Error('Session expired');
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Request failed');
@@ -13,6 +25,13 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  auth: {
+    login: (email, password) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+    me: () => request('/auth/me'),
+    register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+    users: () => request('/auth/users'),
+    updateUser: (id, data) => request(`/auth/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  },
   regions: {
     list: () => request('/regions'),
     create: (data) => request('/regions', { method: 'POST', body: JSON.stringify(data) }),

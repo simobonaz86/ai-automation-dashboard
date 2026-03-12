@@ -1,5 +1,6 @@
 import db, { initializeDatabase } from './db.js';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 
 initializeDatabase();
 
@@ -8,6 +9,12 @@ if (existing.cnt > 0) {
   console.log('Database already seeded. Delete server/data/planner.db to re-seed.');
   process.exit(0);
 }
+
+// Admin user
+const adminId = uuidv4();
+const adminHash = bcrypt.hashSync('Maersk1986', 10);
+db.prepare('INSERT INTO users (id, email, password_hash, name, role) VALUES (?, ?, ?, ?, ?)')
+  .run(adminId, 'simone.bonanni@maersk.com', adminHash, 'Simone Bonanni', 'Admin');
 
 const regionIds = {};
 const regions = [
@@ -224,6 +231,7 @@ db.prepare(
 );
 
 console.log('Database seeded successfully.');
+console.log(`  Admin user: simone.bonanni@maersk.com`);
 console.log(`  Regions: ${regions.length}`);
 console.log(`  Teams: ${teams.length}`);
 console.log(`  Process Steps: ${Object.keys(stepIds).length}`);
